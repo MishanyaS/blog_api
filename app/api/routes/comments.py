@@ -13,13 +13,19 @@ from app.schemas.comment import (
 )
 from app.schemas.pagination import Page
 from app.models.user import User
+from app.core.rate_limiter import RateLimiter
+
+create_comment_limiter = RateLimiter(limit=20, window_seconds=60)
 
 router = APIRouter(prefix="/comments", tags=["comments"])
 
 @router.post(
     "/",
     response_model=CommentRead,
-    dependencies=[Depends(require_roles([UserRole.USER, UserRole.ADMIN]))]
+    dependencies=[
+        Depends(require_roles([UserRole.USER, UserRole.ADMIN])),
+        Depends(create_comment_limiter),
+    ],
 )
 async def create_comment(
     data: CommentCreate,

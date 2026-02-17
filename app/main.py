@@ -4,6 +4,7 @@ from app.core.config import settings
 from app.api.routes import health, auth, categories, posts, comments
 from app.core.database import AsyncSessionLocal
 from app.core.bootstrap import create_admin_if_not_exists, create_first_category_if_not_exists
+from app.core.rate_limiter import RateLimiter
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -14,6 +15,14 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(title=settings.app_name, lifespan=lifespan)
+
+global_limiter = RateLimiter(limit=100, window_seconds=60)
+
+@app.middleware("http")
+async def global_rate_limit(request, call_next):
+    await global_limiter(request)
+    response = await call_next(request)
+    return response
 
 app.include_router(health.router)
 app.include_router(auth.router)

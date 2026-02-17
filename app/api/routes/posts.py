@@ -9,13 +9,19 @@ from app.repositories.post import PostRepository
 from app.schemas.post import PostCreate, PostUpdate, PostRead
 from app.schemas.pagination import Page
 from app.models.user import User
+from app.core.rate_limiter import RateLimiter
+
+create_post_limiter = RateLimiter(limit=10, window_seconds=60)
 
 router = APIRouter(prefix="/posts", tags=["posts"])
 
 @router.post(
     "/",
     response_model=PostRead,
-    dependencies=[Depends(require_roles([UserRole.USER, UserRole.ADMIN]))]
+    dependencies=[
+        Depends(require_roles([UserRole.USER, UserRole.ADMIN])),
+        Depends(create_post_limiter),
+    ],
 )
 async def create_post(
     data: PostCreate,
