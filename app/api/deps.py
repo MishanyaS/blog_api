@@ -9,7 +9,7 @@ from app.models.user import User
 from app.core.security import decode_token
 from app.core.roles import UserRole
 
-from typing import Callable
+from typing import Iterable
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -45,13 +45,10 @@ async def get_current_user(
     
     return user
 
-def require_role(required_role: UserRole) -> Callable:
-    async def role_checker(user: User = Depends(get_current_user)) -> User:
-        if user.role != required_role:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Insufficient permissions",
-            )
+def require_roles(roles: Iterable[UserRole]):
+    async def role_checker(user: User = Depends(get_current_user)):
+        if user.role not in roles:
+            raise HTTPException(status_code=403,detail="Forbidden")
         return user
     
     return role_checker
