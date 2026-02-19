@@ -10,8 +10,8 @@ from app.core.rate_limiter import RateLimiter
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-login_limiter = RateLimiter(limit=5, window_seconds=60)
-register_limiter = RateLimiter(limit=3, window_seconds=60)
+login_limiter = RateLimiter(limit=10, window_seconds=60)
+register_limiter = RateLimiter(limit=5, window_seconds=60)
 
 @router.post(
     "/register",

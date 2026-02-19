@@ -18,11 +18,12 @@ app = FastAPI(title=settings.app_name, lifespan=lifespan)
 
 global_limiter = RateLimiter(limit=100, window_seconds=60)
 
-@app.middleware("http")
-async def global_rate_limit(request, call_next):
-    await global_limiter(request)
-    response = await call_next(request)
-    return response
+if not settings.debug:
+    @app.middleware("http")
+    async def global_rate_limit(request, call_next):
+        await global_limiter(request)
+        response = await call_next(request)
+        return response
 
 app.include_router(health.router)
 app.include_router(auth.router)
