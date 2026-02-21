@@ -37,7 +37,7 @@ async def create_comment(
     
     return await CommentRepository.create(comment_data, db)
 
-@router.post(
+@router.get(
     "/post/{post_id}",
     response_model=Page[CommentRead],
 )
